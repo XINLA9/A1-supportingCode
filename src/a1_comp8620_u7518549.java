@@ -39,17 +39,15 @@ public class a1_comp8620_u7518549 {
         prm.generateRoadmap();
 
         // 获取生成的道路图
-        List<ArmConfig> roadmap = prm.getRoadmap();
-
-        // 在这里，你可以使用生成的道路图来执行进一步的路径搜索和规划
-        // 你可能需要实现自己的路径搜索算法来找到最优路径
+        List<ArmConfig> samples = prm.getSamples();
+        PRMGraph prmGraph = prm.getRoadmap();
 
         // 打印生成的道路图
         System.out.println("Generated Roadmap:");
-        for (ArmConfig config : roadmap) {
+        for (ArmConfig config : samples) {
             System.out.println(config);
         }
-        ps.setPath(roadmap);
+        ps.setPath(samples);
         String outputFile = inputFilename + "_sol";
         ps.saveSolution(outputFile);
     }

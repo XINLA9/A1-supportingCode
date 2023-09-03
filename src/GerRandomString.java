@@ -21,21 +21,17 @@ public class GerRandomString {
      */
     public static String gerRandomString(boolean withGripper, int jointCount) {
         Random rand = new Random();
-
         // 生成底座坐标
         double baseX = MIN_X + rand.nextDouble() * (MAX_X - MIN_X);
         double baseY = MIN_Y + rand.nextDouble() * (MAX_Y - MIN_Y);
-
         StringBuilder configStr = new StringBuilder();
         // 底座中心坐标
         configStr.append(String.format("%.2f %.2f ", baseX, baseY));
-
         // 生成关节角度
         for (int i = 0; i < jointCount; i++) {
             double jointAngle = MIN_JOINT_ANGLE + rand.nextDouble() * (MAX_JOINT_ANGLE - MIN_JOINT_ANGLE);
             configStr.append(String.format("%.2f ", jointAngle));
         }
-
         // 如果需要生成带夹持器的配置，生成夹持器中段长度
         if (withGripper) {
             for (int i = 0; i < 4; i++) {
@@ -43,7 +39,6 @@ public class GerRandomString {
                 configStr.append(String.format("%.2f ", gripperLength));
             }
         }
-
         return configStr.toString().trim();
     }
 }
