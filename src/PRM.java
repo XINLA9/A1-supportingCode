@@ -143,7 +143,7 @@ public class PRM {
     }
 
     /**
-     * Finds the closest neighbor to the given configuration and adds up to the specified number of neighbors。
+     * Finds the closest neighbor to the given configuration and adds up to the specified number of neighbors
      *
      * @param config To find a neighbor's configuration
      * @param maxNeighbors Maximum number of neighborss
@@ -155,7 +155,7 @@ public class PRM {
         for (ArmConfig sample : samples) {
             double distance = calculateConfigDistance(config, sample);
             if (distance <= NEIGHBOR_RADIUS && !config.equals(sample)) {
-                if (isValidConnection(config, sample)) { // 检查是否可连接
+                if (isValidConnection(config, sample)) { // Check for connectivity
                     neighbors.add(sample);
                     num++;
                 }
@@ -183,11 +183,11 @@ public class PRM {
         for (ArmConfig pathConfig : path) {
             for (Obstacle obstacle : this.obstacles) {
                 if (tester.hasCollision(pathConfig, obstacle)) {
-                    return false; // 如果路径上的任何配置与障碍物相交，返回false
+                    return false; // If any configuration on the path intersects an obstacle, return false
                 }
             }
         }
-//        System.out.println(config1+"和"+config2+"可以连接！");
+
         return  true;
     }
     /**
@@ -223,8 +223,12 @@ public class PRM {
         Point2D base2 = config2.getBaseCenter();
         List<Double> jointAngles1 = config1.getJointAngles();
         List<Double> jointAngles2 = config2.getJointAngles();
-        List<Double> gripperLengths1 = config1.getGripperLengths();
-        List<Double> gripperLengths2 = config2.getGripperLengths();
+        List<Double> gripperLengths1 = null;
+        List<Double> gripperLengths2 = null;
+        if(hasGripper){
+            gripperLengths1 = config1.getGripperLengths();
+            gripperLengths2 = config2.getGripperLengths();
+        }
 
         double baseDifference = base1.distance(base2);
         List<Double> jointAngleDifferences = new ArrayList<>();
@@ -235,16 +239,19 @@ public class PRM {
             jointAngleDifferences.add(angleDiff);
         }
         List<Double> gripperLengthDifference = new ArrayList<>();
-        for (int i = 0; i < gripperLengths1.size(); i++) {
-            double length1 = gripperLengths1.get(i);
-            double length2 = gripperLengths2.get(i);
-            double lengthDiff = length2 - length1;
-            gripperLengthDifference.add(lengthDiff);
+        if(hasGripper){
+            for (int i = 0; i < gripperLengths1.size(); i++) {
+                double length1 = gripperLengths1.get(i);
+                double length2 = gripperLengths2.get(i);
+                double lengthDiff = length2 - length1;
+                gripperLengthDifference.add(lengthDiff);
+            }
+
         }
 
         // Base translation limitation
         double baseChangeLimit = 0.001 / 2;
-        // 计算关节角度变化限制
+        // Calculating joint angle change limits
         double JointAngleChangeLimit = 0.10 / 2;
         double maxJointChange = Collections.max(jointAngleDifferences);
 
@@ -294,11 +301,13 @@ public class PRM {
 
             // Calculating the interpolated value of the gripper length
             List<Double> interpolatedGripperLengths = new ArrayList<>();
-            for (int i = 0; i < gripperLengths1.size(); i++) {
-                double length1 = gripperLengths1.get(i);
-                double length2 = gripperLengths2.get(i);
-                double interpolatedLength = length1 + gripperIncrement.get(i) * step;
-                interpolatedGripperLengths.add(interpolatedLength);
+            if(hasGripper){
+                for (int i = 0; i < gripperLengths1.size(); i++) {
+                    double length1 = gripperLengths1.get(i);
+                    double length2 = gripperLengths2.get(i);
+                    double interpolatedLength = length1 + gripperIncrement.get(i) * step;
+                    interpolatedGripperLengths.add(interpolatedLength);
+                }
             }
 
             // Creating Interpolation Configurations
@@ -325,15 +334,14 @@ public class PRM {
         private ArmConfig start;
         private ArmConfig goal;
         public PRMGraph() {graph = new HashMap<>();}
-        // 添加配置和其邻居
+        // Adding a configuration and its neighbors
         public void addConfig(ArmConfig config, List<ArmConfig> neighbors) {
             graph.put(config, neighbors);
         }
-        // 获取配置的邻居列表
+        // Get a list of configured neighbors
         public List<ArmConfig> getNeighbors(ArmConfig config) {
             return graph.getOrDefault(config, new ArrayList<>());
         }
-        // 检查两个配置之间是否有边
         public boolean hasEdge(ArmConfig config1, ArmConfig config2) {
             List<ArmConfig> neighbors = getNeighbors(config1);
             return neighbors.contains(config2);
@@ -341,7 +349,7 @@ public class PRM {
         public Map<ArmConfig, List<ArmConfig>> getGraph() {
             return graph;
         }
-        // 添加边连接两个配置
+        // Adding side connections to two configurations
         public void addEdge(ArmConfig config1, ArmConfig config2) {
             if (!hasEdge(config1, config2)) {
                 List<ArmConfig> neighbors1 = getNeighbors(config1);
@@ -384,6 +392,7 @@ public class PRM {
             Set<ArmConfig> closedList = new HashSet<>();
             Map<ArmConfig, SearchNode> nodeMap = new HashMap<>();
             Map<ArmConfig, List<ArmConfig>> neighbors = graph.getGraph();
+            int nodesNum = 0;
 
             ArmConfig start = graph.getStart();
             ArmConfig goal = graph.getGoal();
@@ -396,12 +405,12 @@ public class PRM {
 
             while (!openQueue.isEmpty()) {
                 currentNode = openQueue.poll();
-
+                nodesNum++;
                 ArmConfig currentConfig = currentNode.getConfig();
 
                 if (currentConfig.equals(goal)) {
                     // Find the target configuration and backtrack the path
-                    System.out.println("Find a path to goal!");
+                    System.out.println("Find a path to goal! Has exploded "+ nodesNum+ "nodes");
                     return reconstructPath(currentNode);
                 }
 
@@ -499,8 +508,12 @@ public class PRM {
             Point2D base2 = config2.getBaseCenter();
             List<Double> jointAngles1 = config1.getJointAngles();
             List<Double> jointAngles2 = config2.getJointAngles();
-            List<Double> gripperLengths1 = config1.getGripperLengths();
-            List<Double> gripperLengths2 = config2.getGripperLengths();
+            List<Double> gripperLengths1 = null;
+            List<Double> gripperLengths2 = null;
+            if (hasGripper){
+            gripperLengths1 = config1.getGripperLengths();
+            gripperLengths2 = config2.getGripperLengths();
+            }
             // Calculate the increment of the base translation
             double baseChangeLimit = 0.001;
             double baseIncrementX = (base2.getX() - base1.getX());
@@ -519,6 +532,7 @@ public class PRM {
             // Calculate the maximum change in gripper length
             double gripperLengthChangeLimit = 0.001;
             double maxGripperLengthChange = 0;
+            if(hasGripper){
             for (int i = 0; i < gripperLengths1.size(); i++) {
                 double length1 = gripperLengths1.get(i);
                 double length2 = gripperLengths2.get(i);
@@ -528,6 +542,7 @@ public class PRM {
                 }
             }
             // Calculate the number of interpolation steps based on the maximum change among the four
+            }
             int numSteps = (int) Math.ceil(Math.max(
                     Math.max(Math.abs(baseIncrementX / baseChangeLimit), Math.abs(baseIncrementY) / baseChangeLimit),
                     Math.max(maxJointAngleChange / JointAngleChangeLimit, maxGripperLengthChange/gripperLengthChangeLimit)

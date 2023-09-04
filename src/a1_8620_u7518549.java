@@ -5,9 +5,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class a1_comp8620_u7518549 {
+public class a1_8620_u7518549 {
 
     public static void main(String[] args) throws IOException {
+//
+//            // test for local
+//        ProblemSpec ps = new ProblemSpec();
+//        String inputFilename = "testcases/gripper_4_joints.txt";
+//        try {
+//            ps.loadProblem(inputFilename);
+//        } catch (IOException e) {
+//            System.out.println("Error loading problem: " + e.getMessage());
+//            return;
+//        }
+//        String outputFilename = "testcases/test_sol.txt";
+//        System.out.println("read problem:" + inputFilename);
 
             if (args.length != 2) {
                 System.out.println("Usage: java -jar a1_comp8620_u7518549.jar inputFileName outputFileName");
@@ -66,7 +78,7 @@ public class a1_comp8620_u7518549 {
                 interpolatedPath.addAll(interpolatedSegment);
             }
         }
-
+        System.out.println("the number of the steps is "+ interpolatedPath.size());
         ps.setPath(interpolatedPath);
         ps.saveSolution(outputFilename);
     }

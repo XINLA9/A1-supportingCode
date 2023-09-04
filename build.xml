@@ -1,0 +1,33 @@
+<project name="a1_8620_u7518549" default="compile-run" basedir=".">
+    <property name="src.dir" value="src" />
+    <property name="build.dir" value="bin" />
+    <property name="main.class" value="a1_8620_u7518549" />
+    <property name="jar.file" value="${main.class}.jar" /> <!-- 新增属性用于指定JAR文件名 -->
+
+    <target name="clean">
+        <delete dir="${build.dir}" />
+        <delete file="${jar.file}" /> <!-- 清除旧的JAR文件 -->
+    </target>
+
+    <target name="compile" depends="clean">
+        <mkdir dir="${build.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}" />
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${jar.file}" basedir="${build.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}" />
+            </manifest>
+        </jar>
+    </target>
+
+
+    <target name="run" depends="jar">
+        <java jar="${jar.file}">
+            <arg line="inputFileName outputFileName" />
+        </java>
+    </target>
+
+    <target name="compile-run" depends="run" />
+</project>
